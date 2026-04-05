@@ -1,11 +1,14 @@
 using EcommerceCheckoutService.Application.Services;
 using EcommerceCheckoutService.Domain.Entities;
+using EcommerceCheckoutService.Infra.Logging;
 using EcommerceCheckoutService.Infra.Queue;
 using EcommerceCheckoutService.Infra.Repositories.Interface;
 using EcommerceCheckoutService.Worker;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+builder.Services.AddSingleton<IAppLogger>(_ =>
+    new FileAppLogger(builder.Configuration["Logging:FilePath"] ?? "logs/worker.log"));
 builder.Services.AddSingleton<IOrderRepository, NoOpOrderRepository>();
 builder.Services.AddSingleton<IPaymentIntentRepository, NoOpPaymentIntentRepository>();
 builder.Services.AddSingleton<IEventPublisher, NoOpEventPublisher>();
