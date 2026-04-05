@@ -19,7 +19,6 @@ public class CheckoutDbContext(DbContextOptions<CheckoutDbContext> options) : Db
             entity.Property(p => p.Status).IsRequired().HasMaxLength(50);
             entity.Property(p => p.Amount).IsRequired();
             entity.Property(p => p.Currency).IsRequired().HasMaxLength(3);
-            entity.Property(p => p.Status).IsRequired().HasMaxLength(50);
             entity.Property(p => p.CreatedAt).IsRequired();
             entity.Property(p => p.IdempotencyKey).IsRequired();
             entity.HasIndex(p => p.IdempotencyKey).IsUnique(); // Unique constraint for idempotency
