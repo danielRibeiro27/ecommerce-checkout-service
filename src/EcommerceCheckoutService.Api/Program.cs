@@ -1,16 +1,19 @@
 using EcommerceCheckoutService.Application.DTOs;
 using EcommerceCheckoutService.Application.Services;
-using EcommerceCheckoutService.Domain.Entities;
+using EcommerceCheckoutService.Infra.Context;
 using EcommerceCheckoutService.Infra.Queue;
-using EcommerceCheckoutService.Infra.Repositories;
+using EcommerceCheckoutService.Infra.Repositories.Implementation;
+using EcommerceCheckoutService.Infra.Repositories.Interface;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddSingleton<IOrderRepository, NoOpOrderRepository>();
-builder.Services.AddSingleton<IPaymentIntentRepository, NoOpPaymentIntentRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IPaymentIntentRepository, PaymentIntentRepository>();
 builder.Services.AddSingleton<IEventPublisher, NoOpEventPublisher>();
+builder.Services.AddDbContext<CheckoutDbContext>(options => options.UseSqlite("Data Source=memory:checkout.db"));
 builder.Services.AddScoped<CheckoutService>();
 
 var app = builder.Build();
@@ -22,35 +25,31 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+using(var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<CheckoutDbContext>();
+    dbContext.Database.EnsureCreated();
+}
+
+app.MapGet("/health", () => Results.Ok("Healthy"));
+
 app.MapPost("/checkout", async (CheckoutRequest request, CheckoutService checkoutService) =>
 {
-    var order = await checkoutService.CreateCheckoutAsync(request.Amount, request.Currency);
-    return Results.Ok(order);
+    var orderResponse = await checkoutService.CreateCheckoutAsync(request.Amount, request.Currency);
+    return Results.Created($"/ordersAndPayments/{orderResponse.Order.Id}", orderResponse);
 });
 
-app.MapGet("/orders/{id:guid}", async (Guid id, IOrderRepository orderRepository, IPaymentIntentRepository paymentIntentRepository) =>
+app.MapGet("/ordersAndPayments/{orderId:guid}", async (Guid orderId, IOrderRepository orderRepository, IPaymentIntentRepository paymentIntentRepository) =>
 {
-    var order = await orderRepository.GetByIdAsync(id);
+    var order = await orderRepository.GetByIdAsync(orderId);
     if (order is null)
         return Results.NotFound();
 
-    var paymentIntent = await paymentIntentRepository.GetByOrderIdAsync(id);
-    return Results.Ok(new OrderResponse(order, paymentIntent));
+    var paymentIntents = await paymentIntentRepository.GetByOrderIdAsync(orderId);
+    return Results.Ok(new OrderResponse(order, paymentIntents));
 });
 
 app.Run();
-
-class NoOpOrderRepository : IOrderRepository
-{
-    public Task<Order?> GetByIdAsync(Guid id) => Task.FromResult<Order?>(null);
-    public Task AddAsync(Order order) => Task.CompletedTask;
-}
-
-class NoOpPaymentIntentRepository : IPaymentIntentRepository
-{
-    public Task<PaymentIntent?> GetByOrderIdAsync(Guid orderId) => Task.FromResult<PaymentIntent?>(null);
-    public Task AddAsync(PaymentIntent paymentIntent) => Task.CompletedTask;
-}
 
 class NoOpEventPublisher : IEventPublisher
 {
