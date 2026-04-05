@@ -1,6 +1,7 @@
+using EcommerceCheckoutService.Application.DTOs;
 using EcommerceCheckoutService.Domain.Entities;
 using EcommerceCheckoutService.Infra.Queue;
-using EcommerceCheckoutService.Infra.Repositories;
+using EcommerceCheckoutService.Infra.Repositories.Interface;
 
 namespace EcommerceCheckoutService.Application.Services;
 
@@ -20,30 +21,28 @@ public class CheckoutService
         _eventPublisher = eventPublisher;
     }
 
-    public async Task<Order> CreateCheckoutAsync(decimal amount, string currency)
+    public async Task<OrderResponse> CreateCheckoutAsync(decimal amount, string currency)
     {
         var order = new Order
         {
-            Id = Guid.NewGuid(),
             Status = "Pending",
             Amount = amount,
             Currency = currency
         };
 
-        await _orderRepository.AddAsync(order);
+        var createdOrder = await _orderRepository.AddAsync(order);
 
         var paymentIntent = new PaymentIntent
         {
-            Id = Guid.NewGuid(),
-            OrderId = order.Id,
+            OrderId = createdOrder.Id,
             Status = "Created",
             IdempotencyKey = Guid.NewGuid().ToString()
         };
 
-        await _paymentIntentRepository.AddAsync(paymentIntent);
-        await _eventPublisher.PublishAsync("checkout.created", order);
+        var createdPaymentIntent = await _paymentIntentRepository.AddAsync(paymentIntent);
+        await _eventPublisher.PublishAsync("checkout.created", createdOrder);
 
-        return order;
+        return new OrderResponse(createdOrder, [createdPaymentIntent]);
     }
 
     public async Task UpdatePaymentStatusAsync(Guid orderId, string status)

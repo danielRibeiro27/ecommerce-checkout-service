@@ -1,9 +1,9 @@
 using EcommerceCheckoutService.Domain.Entities;
 
-namespace EcommerceCheckoutService.Infra.Repositories;
+namespace EcommerceCheckoutService.Infra.Repositories.Interface;
 
 public interface IOrderRepository
 {
     Task<Order?> GetByIdAsync(Guid id);
-    Task AddAsync(Order order);
+    Task<Order> AddAsync(Order order);
 }
