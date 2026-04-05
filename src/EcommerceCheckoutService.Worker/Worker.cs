@@ -1,4 +1,5 @@
 using EcommerceCheckoutService.Application.Services;
+using EcommerceCheckoutService.Infra.Logging;
 using EcommerceCheckoutService.Infra.Queue;
 using System.Text.Json;
 
@@ -8,9 +9,9 @@ public class Worker : BackgroundService
 {
     private readonly IQueueConsumer _queueConsumer;
     private readonly CheckoutService _checkoutService;
-    private readonly ILogger<Worker> _logger;
+    private readonly IAppLogger _logger;
 
-    public Worker(IQueueConsumer queueConsumer, CheckoutService checkoutService, ILogger<Worker> logger)
+    public Worker(IQueueConsumer queueConsumer, CheckoutService checkoutService, IAppLogger logger)
     {
         _queueConsumer = queueConsumer;
         _checkoutService = checkoutService;
@@ -28,13 +29,13 @@ public class Worker : BackgroundService
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex, "Failed to deserialize queue message: {Message}", message);
+                _logger.Error($"Failed to deserialize queue message: {message}", ex);
                 return;
             }
 
             if (payload is null)
             {
-                _logger.LogWarning("Queue message deserialized to null: {Message}", message);
+                _logger.Warning($"Queue message deserialized to null: {message}");
                 return;
             }
 

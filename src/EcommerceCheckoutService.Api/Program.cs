@@ -1,6 +1,7 @@
 using EcommerceCheckoutService.Application.DTOs;
 using EcommerceCheckoutService.Application.Services;
 using EcommerceCheckoutService.Infra.Context;
+using EcommerceCheckoutService.Infra.Logging;
 using EcommerceCheckoutService.Infra.Queue;
 using EcommerceCheckoutService.Infra.Repositories.Implementation;
 using EcommerceCheckoutService.Infra.Repositories.Interface;
@@ -10,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
+builder.Services.AddSingleton<IAppLogger>(_ =>
+    new FileAppLogger(builder.Configuration["Logging:FilePath"] ?? "logs/api.log"));
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IPaymentIntentRepository, PaymentIntentRepository>();
 builder.Services.AddSingleton<IEventPublisher, NoOpEventPublisher>();
