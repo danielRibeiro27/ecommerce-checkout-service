@@ -1,0 +1,16 @@
+@EcommerceCheckoutService.Api_HostAddress = http://localhost:5171
+
+POST {{EcommerceCheckoutService.Api_HostAddress}}/checkout
+Content-Type: application/json
+
+{
+  "amount": 99.99,
+  "currency": "USD"
+}
+
+###
+
+GET {{EcommerceCheckoutService.Api_HostAddress}}/orders/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+###

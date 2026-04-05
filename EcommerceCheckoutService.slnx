@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EcommerceCheckoutService.Api/EcommerceCheckoutService.Api.csproj" />
+    <Project Path="src/EcommerceCheckoutService.Application/EcommerceCheckoutService.Application.csproj" />
+    <Project Path="src/EcommerceCheckoutService.Domain/EcommerceCheckoutService.Domain.csproj" />
+    <Project Path="src/EcommerceCheckoutService.Infra/EcommerceCheckoutService.Infra.csproj" />
+    <Project Path="src/EcommerceCheckoutService.Worker/EcommerceCheckoutService.Worker.csproj" />
+  </Folder>
+</Solution>
