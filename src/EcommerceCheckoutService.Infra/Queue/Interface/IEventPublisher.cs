@@ -2,5 +2,5 @@ namespace EcommerceCheckoutService.Infra.Queue;
 
 public interface IEventPublisher
 {
-    Task PublishAsync<T>(string topic, T message);
+    Task PublishAsync<T>(string queue, string topic, T message);
 }

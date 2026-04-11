@@ -43,7 +43,7 @@ public class CheckoutService
         };
 
         var createdPaymentIntent = await _paymentIntentRepository.AddAsync(paymentIntent);
-        await _eventPublisher.PublishAsync("checkout.created", createdOrder);
+        await _eventPublisher.PublishAsync("BatchlabJobs", "created", createdPaymentIntent);
 
         return new OrderResponse(createdOrder, [createdPaymentIntent]);
     }
