@@ -11,13 +11,22 @@ public class SQSEventPublisher : IEventPublisher
     {
         ArgumentException.ThrowIfNullOrEmpty(topic, nameof(topic));
         ArgumentNullException.ThrowIfNull(message, nameof(message));
-        ArgumentNullException.ThrowIfNull(queue, nameof(queue));
+        ArgumentException.ThrowIfNullOrEmpty(queue, nameof(queue));
 
         AmazonSQSClient client = new (Amazon.RegionEndpoint.SAEast1);
-        var queueUrl = await client.GetQueueUrlAsync(queue);
+        GetQueueUrlResponse queueUrl;
+
+        try
+        {
+            queueUrl = await client.GetQueueUrlAsync(queue);
+        }
+        catch (QueueDoesNotExistException ex)
+        {
+            throw new InvalidOperationException($"Queue '{queue}' does not exist.", ex);
+        }
 
         if (queueUrl is null || string.IsNullOrEmpty(queueUrl.QueueUrl))
-            throw new NullReferenceException($"Queue URL for '{queue}' not found.");
+            throw new InvalidOperationException($"Queue URL for '{queue}' was not returned.");
 
         //Logger.LogInformation($"QUEUE_URL: {queueUrl.QueueUrl}");
         
