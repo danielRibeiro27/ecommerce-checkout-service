@@ -41,7 +41,7 @@ public class CheckoutService
         {
             OrderId = createdOrder.Id,
             Status = "Created",
-            Amount = createdOrder.Amount.ToString(),
+            Amount = createdOrder.Amount,
             Currency = createdOrder.Currency,
             CreatedAt = DateTime.UtcNow,
             IdempotencyKey = Guid.NewGuid().ToString()
