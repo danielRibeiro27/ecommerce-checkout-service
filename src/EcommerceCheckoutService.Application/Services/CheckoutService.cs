@@ -41,16 +41,15 @@ public class CheckoutService
         {
             OrderId = createdOrder.Id,
             Status = "Created",
-            Amount = createdOrder.Amount.ToString(),
+            Amount = createdOrder.Amount,
             Currency = createdOrder.Currency,
             CreatedAt = DateTime.UtcNow,
             IdempotencyKey = Guid.NewGuid().ToString()
         };
 
         var createdPaymentIntent = await _paymentIntentRepository.AddAsync(paymentIntent);
+        await _eventPublisher.PublishAsync("BatchlabJobs", "created", createdPaymentIntent);
         _logger.Info($"PaymentIntent created: {createdPaymentIntent.Id} for order: {createdOrder.Id}");
-
-        await _eventPublisher.PublishAsync("checkout.created", createdOrder);
 
         return new OrderResponse(createdOrder, [createdPaymentIntent]);
     }

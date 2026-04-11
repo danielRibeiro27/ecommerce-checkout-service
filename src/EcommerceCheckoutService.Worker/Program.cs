@@ -48,7 +48,7 @@ class NoOpPaymentIntentRepository : IPaymentIntentRepository
 
 class NoOpEventPublisher : IEventPublisher
 {
-    public Task PublishAsync<T>(string topic, T message) => Task.CompletedTask;
+    public Task PublishAsync<T>(string queue, string topic, T message) => Task.CompletedTask;
 }
 
 class NoOpQueueConsumer : IQueueConsumer

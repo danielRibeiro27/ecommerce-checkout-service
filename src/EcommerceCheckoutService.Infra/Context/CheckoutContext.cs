@@ -5,7 +5,7 @@ namespace EcommerceCheckoutService.Infra.Context;
 
 public class CheckoutDbContext(DbContextOptions<CheckoutDbContext> options) : DbContext(options)
 {
-    public DbSet<PaymentIntent> PaymentIntents { get; set; }
+    public DbSet<PaymentIntent> PaymentIntents { get; set; } 
     public DbSet<Order> Orders { get; set; } 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

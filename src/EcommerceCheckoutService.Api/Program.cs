@@ -3,6 +3,7 @@ using EcommerceCheckoutService.Application.Services;
 using EcommerceCheckoutService.Infra.Context;
 using EcommerceCheckoutService.Infra.Logging;
 using EcommerceCheckoutService.Infra.Queue;
+using EcommerceCheckoutService.Infra.Queue.Implementation;
 using EcommerceCheckoutService.Infra.Repositories.Implementation;
 using EcommerceCheckoutService.Infra.Repositories.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ builder.Services.AddSingleton<IAppLogger>(_ =>
     new FileAppLogger(builder.Configuration["Logging:FilePath"] ?? "logs/api.log"));
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IPaymentIntentRepository, PaymentIntentRepository>();
-builder.Services.AddSingleton<IEventPublisher, NoOpEventPublisher>();
+builder.Services.AddSingleton<IEventPublisher, SQSEventPublisher>();
 builder.Services.AddDbContext<CheckoutDbContext>(options => options.UseSqlite("Data Source=memory:checkout.db"));
 builder.Services.AddScoped<CheckoutService>();
 
@@ -53,8 +54,3 @@ app.MapGet("/ordersAndPayments/{orderId:guid}", async (Guid orderId, IOrderRepos
 });
 
 app.Run();
-
-class NoOpEventPublisher : IEventPublisher
-{
-    public Task PublishAsync<T>(string topic, T message) => Task.CompletedTask;
-}
